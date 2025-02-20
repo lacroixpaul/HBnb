@@ -32,8 +32,10 @@ from basemodel import BaseModel
 
 
 class Place(BaseModel):
-    def __init__(self, title, price, latitude, longitude,
-                 owner, description=None):
+    def __init__(self, title, price, latitude, longitude, owner, description=None):
+        """
+        Create a new place
+        """
         super().__init__()
 
         if not isinstance(title, str) or not title or len(title) > 100:
@@ -59,3 +61,15 @@ class Place(BaseModel):
         if description is not None and not isinstance(description, str):
             raise TypeError("Description must be a string.")
         self.description = description
+
+        self.reviews = []
+        self.amenities = []
+
+    def add_review(self, review):
+        """Add a review to the place."""
+        self.reviews.append(review)
+
+    def add_amenity(self, amenity):
+        """Add an amenity to the place."""
+        self.amenities.append(amenity)
+
