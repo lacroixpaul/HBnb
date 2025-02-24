@@ -42,28 +42,51 @@ class Place(BaseModel):
             raise ValueError("Title must be a string of max. 100 characters.")
         self.title = title
 
-        if not isinstance(price, (float, int)) or price < 0:
-            raise ValueError("Price must be a positive number.")
-        self.price = float(price)
-
-        if not isinstance(latitude, (float, int)) or not (-90.0 <= latitude <= 90.0):
-            raise ValueError("Latitude must be a float between -90.0 and 90.0.")
-        self.latitude = float(latitude)
-
-        if not isinstance(longitude, (float, int)) or not (-180.0 <= longitude <= 180.0):
-            raise ValueError("Longitude must be a float between -180.0 and 180.0.")
-        self.longitude = float(longitude)
-
         if owner is None or not hasattr(owner, 'id'):
             raise ValueError("Owner is required and must be a valid User instance.")
-        self.owner = owner
 
+        self.owner = owner
+        self.price = price
+        self.latitude = latitude
+        self.longitude = longitude
+        
         if description is not None and not isinstance(description, str):
             raise TypeError("Description must be a string.")
         self.description = description
 
         self.reviews = []
         self.amenities = []
+
+    @property
+    def price(self):
+            return (self.__price)
+
+    @price.setter
+    def price(self, value):
+        if not isinstance(value, (float, int)) or value < 0:
+            raise ValueError("Price must be a positive number.")
+        self.__price = float(value)
+
+    @property
+    def latitude(self):
+            return (self.__latitude)
+
+    @latitude.setter
+    def latitude(self, value):
+        if not isinstance(value, (float, int)) or not (-90.0 <= value <= 90.0):
+            raise ValueError("Latitude must be a float between -90.0 and 90.0.")
+        self.__latitude = float(value)
+
+    @property
+    def longitude(self):
+            return (self.__latitude)
+
+    @latitude.setter
+    def longitude(self, value):
+        if not isinstance(value, (float, int)) or not (-180.0 <= value <= 180.0):
+            raise ValueError("Longitude must be a float between -180.0 and 180.0.")
+        self.__latitude = float(value)
+
 
     def add_review(self, review):
         """Add a review to the place."""
