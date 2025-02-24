@@ -58,6 +58,3 @@ docker-compose.override.yml
 # Ignore Git-related files
 .git/
 .gitignore~
-
-# Test folder
-test/

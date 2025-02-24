@@ -1,5 +1,29 @@
+#!/usr/bin/python3
+"""
+Module user
+
+This module defines the 'User' class, which represents a system user.
+It inherits from BaseModel (defined in basemodel.py).
+
+The `User` class includes the following attributes:
+- first_name (str): The first name of the user (required, maximum length of 50 characters).
+- last_name (str): The last name of the user (required, maximum length of 50 characters).
+- email (str): The email address of the user (required, must follow standard email format validation).
+- is_admin (bool): Indicates whether the user has administrative privileges (default: False).
+- places (list): A list of places owned by the user.
+- ID: Inherited from BaseModel.
+- Date of creation / update: Inherited from BaseModel.
+
+Example usage:
+    user = User(
+        first_name="John",
+        last_name="Doe",
+        email="john.doe@example.com",
+        is_admin=False
+    )
+"""
 import re
-from basemodel import BaseModel
+from .basemodel import BaseModel
 
 
 class User(BaseModel):

@@ -1,5 +1,21 @@
+#!/usr/bin/python3
+"""
+Module amenity
+
+This module defines the 'Amenity' class, which represents an amenity that can be associated with a place.
+It inherits from BaseModel (defined in basemodel.py).
+
+The `Amenity` class includes the following attributes:
+- name (str): The name of the amenity (required, non-empty string with a maximum length of 50).
+- ID: Inherited from BaseModel.
+- Date of creation / update: Inherited from BaseModel.
+
+Example usage:
+    amenity = Amenity(name="Wi-Fi")
+"""
+
 import re
-from basemodel import BaseModel
+from .basemodel import BaseModel
 
 
 class Amenity(BaseModel):
