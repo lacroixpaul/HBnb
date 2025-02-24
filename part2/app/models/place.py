@@ -92,7 +92,7 @@ class Place(BaseModel):
                 (-180.0 <= value <= 180.0):
             raise ValueError("Longitude must be a float \
                 between -180.0 and 180.0.")
-        self.__latitude = float(value)
+        self._longitude = float(value)
 
     def add_review(self, review):
         """Add a review to the place."""
@@ -101,3 +101,17 @@ class Place(BaseModel):
     def add_amenity(self, amenity):
         """Add an amenity to the place."""
         self.amenities.append(amenity)
+
+    def to_dict(self):
+        """Converts the place instance to a dictionary."""
+        return {
+            "id": self.id,
+            "title": self.title,
+            "price": self.price,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "owner": self.owner,
+            "description": self.description,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+        }
