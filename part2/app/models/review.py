@@ -26,7 +26,7 @@ Example usage:
     )
 """
 
-from basemodel import BaseModel
+from .basemodel import BaseModel
 
 
 class Review(BaseModel):
@@ -38,12 +38,12 @@ class Review(BaseModel):
 
         if not isinstance(text, str) or not text:
             raise ValueError("Content must be a string.")
-        self.title = text
+        self.text = text
 
         if not isinstance(rating, int) or not rating \
                 or rating < 1 and rating > 5:
             raise ValueError("Rating must be an int between 1 and 5.")
-        self.title = rating
+        self.rating = rating
 
         self.place = place  # Need to be validated !!!
         self.user = user
