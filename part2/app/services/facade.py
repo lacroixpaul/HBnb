@@ -22,24 +22,52 @@ class HBnBFacade:
         return self.user_repo.get_by_attribute('email', email)
 
     def create_place(self, place_data):
+        price = place_data.get('price')
+        if not isinstance(price, (float, int)) or price < 0:
+            raise ValueError("Price must be a positive number.")
+
+        latitude = place_data.get('latitude')
+        if not isinstance(latitude, (float,
+                                     int)) or not (-90.0 <= latitude <= 90.0):
+            raise ValueError("Latitude must be a float between -90.0 and 90.0")
+
+        longitude = place_data.get('longitude')
+        if not isinstance(longitude, (float, int)) or not \
+                (-180.0 <= longitude <= 180.0):
+            raise ValueError("Longitude must be a float \
+                between -180.0 and 180.0.")
+
         place = Place(**place_data)
-        title = place_data.get('title')
-        if not isinstance(title, str) or not title or len(title) > 100:
-            raise ValueError("Title must be a string of max. 100 characters.")
         self.place_repo.add(place)
         return place
 
     def get_place(self, place_id):
-        # Placeholder for logic to retrieve a place by ID, including associated owner and amenities
-        pass
+        place = self.place_repo.get_by_id(place_id)
+        if not place:
+            raise ValueError(f"No place found with ID: {place_id}")
+
+        owner_id = place.owner
+        owner = self.user_repo.get_by_id(owner_id)
+
+        if not owner:
+            raise ValueError("Owner not found for this place.")
+
+        place.owner = owner
+        amenities = self.amenity_repo.get_all()
+        place.amenities = [amenity for amenity
+                           in amenities if amenity.place_id == place_id]
+        return place
 
     def get_all_places(self):
-        # Placeholder for logic to retrieve all places
-        pass
+        return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
-        # Placeholder for logic to update a place
-        pass
+        place = self.place_repo.get_by_id(place_id)
+        if not place:
+            raise ValueError(f"No place found with ID: {place_id}")
+        place.update(place_data)
+        self.place_repo.add(place)
+        return place
 
     def create_amenity(self, amenity_data):
         # Placeholder for logic to create an amenity
