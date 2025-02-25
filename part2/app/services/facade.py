@@ -42,12 +42,12 @@ class HBnBFacade:
         return place
 
     def get_place(self, place_id):
-        place = self.place_repo.get_by_id(place_id)
+        place = self.place_repo.get(place_id)
         if not place:
             raise ValueError(f"No place found with ID: {place_id}")
 
         owner_id = place.owner
-        owner = self.user_repo.get_by_id(owner_id)
+        owner = self.user_repo.get(owner_id)
 
         if not owner:
             raise ValueError("Owner not found for this place.")
@@ -62,7 +62,7 @@ class HBnBFacade:
         return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
-        place = self.place_repo.get_by_id(place_id)
+        place = self.place_repo.get(place_id)
         if not place:
             raise ValueError(f"No place found with ID: {place_id}")
         place.update(place_data)
