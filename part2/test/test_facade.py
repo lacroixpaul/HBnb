@@ -4,6 +4,7 @@ from app.services.facade import HBnBFacade
 from app.models.place import Place
 from app.models.user import User
 
+
 class TestHBnBFacade(unittest.TestCase):
     def setUp(self):
         """
@@ -77,7 +78,7 @@ class TestHBnBFacade(unittest.TestCase):
     def test_get_place_not_found(self):
         """
         Test get_place with a non-existent ID.
-        """
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    """
         with self.assertRaises(ValueError):
             self.facade.get_place("invalid_id")
 
@@ -157,7 +158,7 @@ class TestHBnBFacade(unittest.TestCase):
         }
         updated_place = self.facade.update_place(place.id, update_data)
         self.assertEqual(updated_place.title, "New Title")
-        self.assertEqual(updated_place.description, "A brand new description")
+        self.assertEqual(updated_place.description, "A brand new description.")
 
     def test_update_place_not_found(self):
         """
@@ -165,6 +166,7 @@ class TestHBnBFacade(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             self.facade.update_place("invalid_id", {'title': "New Title"})
+
 
 if __name__ == '__main__':
     unittest.main()

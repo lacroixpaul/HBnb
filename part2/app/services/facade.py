@@ -1,6 +1,7 @@
 from app.persistence.repository import InMemoryRepository
 from app.models.place import Place
 from app.models.user import User
+from app.models.amenity import Amenity
 
 
 class HBnBFacade:
@@ -20,6 +21,17 @@ class HBnBFacade:
 
     def get_user_by_email(self, email):
         return self.user_repo.get_by_attribute('email', email)
+
+    def update_user(self, user_id, user_data):
+        user = self.get_user(user_id)
+        if not user:
+            return None
+
+        user.update(user_data)
+        return user
+
+    def get_all_users(self):
+        return self.user_repo.get_all()
 
     def create_place(self, place_data):
         price = place_data.get('price')
@@ -70,20 +82,45 @@ class HBnBFacade:
         return place
 
     def create_amenity(self, amenity_data):
-        # Placeholder for logic to create an amenity
-        pass
+        """Créer un équipement avec une vérification de doublon et validation des données"""
+        new_name = amenity_data.get('name', "").strip()
+
+        if not new_name:
+            raise ValueError("Amenity name cannot be empty.")
+
+        existing_amenities = self.get_all_amenities()
+        for amenity in existing_amenities:
+            if amenity.name.lower() == new_name.lower():
+                raise ValueError("Amenity already exist.")
+
+        amenity = Amenity(name=new_name)
+        self.amenity_repo.add(amenity)
+        return amenity
 
     def get_amenity(self, amenity_id):
-        # Placeholder for logic to retrieve an amenity by ID
-        pass
+        return self.amenity_repo.get(amenity_id)
 
     def get_all_amenities(self):
-        # Placeholder for logic to retrieve all amenities
-        pass
+        return self.amenity_repo.get_all()
 
     def update_amenity(self, amenity_id, amenity_data):
-        # Placeholder for logic to update an amenity
-        pass
+        amenity = self.get_amenity(amenity_id)
+        if not amenity:
+            return None
+
+        new_name = amenity_data.get('name', "").strip()
+        if not new_name:
+            raise ValueError("Amenity name cannot be empty.")
+
+        existing_amenities = self.get_all_amenities()
+        for a in existing_amenities:
+            if a.id != amenity_id and a.name.lower() == new_name.lower():
+                raise ValueError(
+                    "Another amenity with this name already exists.")
+
+        amenity.name = new_name
+        self.amenity_repo.add(amenity)  # Enregistrer la mise à jour
+        return amenity
 
     def create_review(self, review_data):
         # Placeholder for logic to create a review, including validation for user_id, place_id, and rating
