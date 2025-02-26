@@ -19,22 +19,32 @@ from .basemodel import BaseModel
 
 
 class Amenity(BaseModel):
-    """Represents a Amenity with validation for name."""
+    """Represents an Amenity with validation for name."""
 
     def __init__(self, name):
         super().__init__()  # Initialize BaseModel (UUID, created_at, updated_at)
-        self.name = self.validate_name(name)
+        self._name = self._validate_name(name)
 
-    def validate_name(self, name):
-        """Validates that the name is a string with a maximum length of 50."""
+    def _validate_name(self, name):
+        """Validates that the name is a non-empty string with a maximum length of 50."""
         if not isinstance(name, str) or not name.strip():
             raise ValueError("Name must be a non-empty string.")
-        if len(name) > 50:
+        if len(name.strip()) > 50:
             raise ValueError("Name cannot exceed 50 characters.")
-        return name
+        return name.strip()
+
+    @property
+    def name(self):
+        """Getter for name."""
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        """Setter for name."""
+        self._name = self._validate_name(value)
 
     def to_dict(self):
-        """Converts the user instance to a dictionary."""
+        """Converts the amenity instance to a dictionary."""
         return {
             "id": self.id,
             "name": self.name,
