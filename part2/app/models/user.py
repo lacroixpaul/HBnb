@@ -27,30 +27,40 @@ from .basemodel import BaseModel
 
 
 class User(BaseModel):
-    """Represents a user with validation for name and email."""
+    """User class model."""
 
     def __init__(self, first_name, last_name, email, is_admin=False):
         super().__init__()  # Initialize BaseModel (UUID, created_at, updated_at)
-        self.first_name = self.validate_name(first_name)
-        self.last_name = self.validate_name(last_name)
-        self._email = self.validate_email(email)
+
+        # First name validation
+        if not isinstance(first_name, str) or not first_name.strip() or len(first_name.strip()) > 50:
+            raise ValueError(
+                "First name must be a non-empty string with a maximum length of 50 characters.")
+        self.first_name = first_name.strip()
+
+        # Last name validation
+        if not isinstance(last_name, str) or not last_name.strip() or len(last_name.strip()) > 50:
+            raise ValueError(
+                "Last name must be a non-empty string with a maximum length of 50 characters.")
+        self.last_name = last_name.strip()
+
+        # Email validation using a helper function
+        self._email = self._validate_email(email)
+
+        # Is admin validation
+        if not isinstance(is_admin, bool):
+            raise ValueError("is_admin must be a boolean.")
         self._is_admin = is_admin
+
+        # User places list
         self.places = []
 
-    def validate_name(self, name):
-        """Validates that the name is a string with a maximum length of 50."""
-        if not isinstance(name, str) or len(name) > 50:
-            raise ValueError("Maximum length of 50 characters")
-        return name
-
     @staticmethod
-    def validate_email(email):
+    def _validate_email(email):
         """Validates if the email follows a standard format."""
         pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
-
-        if not re.match(pattern, email):
+        if not isinstance(email, str) or not re.match(pattern, email):
             raise ValueError("The email address is not valid.")
-
         return email
 
     @property
@@ -61,7 +71,7 @@ class User(BaseModel):
     @email.setter
     def email(self, value):
         """Setter for email with validation."""
-        self._email = self.validate_email(value)
+        self._email = self._validate_email(value)
 
     @property
     def is_admin(self):
@@ -72,7 +82,7 @@ class User(BaseModel):
     def is_admin(self, value):
         """Setter for is_admin."""
         if not isinstance(value, bool):
-            raise ValueError("is_admin must be a boolean")
+            raise ValueError("is_admin must be a boolean.")
         self._is_admin = value
 
     def to_dict(self):
@@ -81,8 +91,8 @@ class User(BaseModel):
             "id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "email": self.email,
-            "is_admin": self.is_admin,
+            "email": self.email,  # ✅ Utilisation du getter
+            "is_admin": self.is_admin,  # ✅ Utilisation du getter
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
