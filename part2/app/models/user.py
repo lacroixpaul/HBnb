@@ -32,22 +32,22 @@ class User(BaseModel):
     def __init__(self, first_name, last_name, email, is_admin=False):
         super().__init__()  # Initialize BaseModel (UUID, created_at, updated_at)
 
-        # First name validation
+        # First name
         if not isinstance(first_name, str) or not first_name.strip() or len(first_name.strip()) > 50:
             raise ValueError(
                 "First name must be a non-empty string with a maximum length of 50 characters.")
         self.first_name = first_name.strip()
 
-        # Last name validation
+        # Last name
         if not isinstance(last_name, str) or not last_name.strip() or len(last_name.strip()) > 50:
             raise ValueError(
                 "Last name must be a non-empty string with a maximum length of 50 characters.")
         self.last_name = last_name.strip()
 
-        # Email validation using a helper function
+        # Email
         self._email = self._validate_email(email)
 
-        # Is admin validation
+        # Is admin
         if not isinstance(is_admin, bool):
             raise ValueError("is_admin must be a boolean.")
         self._is_admin = is_admin
@@ -91,8 +91,8 @@ class User(BaseModel):
             "id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
-            "email": self.email,  # ✅ Utilisation du getter
-            "is_admin": self.is_admin,  # ✅ Utilisation du getter
+            "email": self.email,
+            "is_admin": self.is_admin,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
         }
