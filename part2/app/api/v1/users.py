@@ -28,7 +28,7 @@ class UserList(Resource):
                 return {'error': 'Email already registered'}, 400
 
             new_user = facade.create_user(user_data)
-            return {'id': new_user.id, 'first_name': new_user.first_name, 'last_name': new_user.last_name, 'email': new_user.email}, 201
+            return new_user.to_dict(), 201
 
         except ValueError as e:
             return {"error": str(e)}, 400
@@ -37,7 +37,7 @@ class UserList(Resource):
     def get(self):
         """Retrieve a list of all users"""
         users = facade.get_all_users()
-        return [{'id': u.id, 'first_name': u.first_name, 'last_name': u.last_name, 'email': u.email} for u in users], 200
+        return [u.to_dict() for u in users], 200
 
 
 @api.route('/<user_id>')
@@ -50,12 +50,7 @@ class UserResource(Resource):
         if not user:
             return {'error': 'User not found'}, 404
 
-        return {
-            'id': user.id,
-            'first_name': user.first_name,
-            'last_name': user.last_name,
-            'email': user.email
-        }, 200
+        return user.to_dict(), 200
 
     @api.expect(user_model, validate=True)
     @api.response(200, 'User updated successfully')
@@ -69,12 +64,7 @@ class UserResource(Resource):
             if not updated_user:
                 return {'error': 'User not found'}, 404
 
-            return {
-                'id': updated_user.id,
-                'first_name': updated_user.first_name,
-                'last_name': updated_user.last_name,
-                'email': updated_user.email
-            }, 200
+            return updated_user.to_dict(), 200
 
         except ValueError as e:
             return {"error": str(e)}, 400
