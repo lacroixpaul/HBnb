@@ -47,9 +47,18 @@ class Review(BaseModel):
         self.rating = rating
 
         if not isinstance(place, Place):
-            raise ValueError("Place must be an instance of Place.")
+            raise ValueError("Place is recquired.")
         self.place = place
 
         if not isinstance(user, User):
             raise ValueError("User must be an instance of User.")
         self.user = user
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'text': self.text,
+            'rating': self.rating,
+            'place_id': self.place.id if hasattr(self.place, 'id') else None,
+            'user_id': self.user.id if hasattr(self.user, 'id') else None,
+        }

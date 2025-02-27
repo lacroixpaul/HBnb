@@ -2,6 +2,7 @@ from app.persistence.repository import InMemoryRepository
 from app.models.place import Place
 from app.models.user import User
 from app.models.amenity import Amenity
+from app.models.review import Review
 
 
 class HBnBFacade:
@@ -132,25 +133,60 @@ class HBnBFacade:
         return amenity
 
     def create_review(self, review_data):
-        # Placeholder for logic to create a review, including validation for user_id, place_id, and rating
-        pass
+        text = review_data.get('text', "").strip()
+        rating = review_data.get('rating')
+        user_id = review_data.get('user_id')
+        place_id = review_data.get('place_id')
+
+        if not text:
+            raise ValueError("Review text cannot be empty.")
+        if not isinstance(rating, int) or rating < 1 or rating > 5:
+            raise ValueError("Rating must be an integer between 1 and 5.")
+        user = self.user_repo.get(user_id)
+        if not user:
+            raise ValueError("User not found.")
+        place = self.place_repo.get(place_id)
+        if not place:
+            raise ValueError("Place not found.")
+        review = Review(text=text, rating=rating, user=user, place=place)
+        self.review_repo.add(review)
+        return review
 
     def get_review(self, review_id):
-        # Placeholder for logic to retrieve a review by ID
-        pass
+        review = self.review_repo.get(review_id)
+        if not review:
+            raise ValueError(f"Review with ID {review_id} not found.")
+        return review
 
     def get_all_reviews(self):
-        # Placeholder for logic to retrieve all reviews
-        pass
+        return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        # Placeholder for logic to retrieve all reviews for a specific place
-        pass
+        reviews = self.review_repo.get_all()
+        place_reviews = [review for review in reviews if review.place.id == place_id]
+        return place_reviews
 
     def update_review(self, review_id, review_data):
-        # Placeholder for logic to update a review
-        pass
+        review = self.review_repo.get(review_id)
+        if not review:
+            raise ValueError(f"No review found with ID: {review_id}")
+        text = review_data.get('text', "").strip()
+        rating = review_data.get('rating')
+        if text:
+            review.text = text
+        else:
+            raise ValueError("Review text cannot be empty.")
+        if isinstance(rating, int) and 1 <= rating <= 5:
+            review.rating = rating
+        elif rating is not None:
+            raise ValueError("Rating must be an integer between 1 and 5.")
+        self.review_repo.add(review)
+        return review
+
 
     def delete_review(self, review_id):
-        # Placeholder for logic to delete a review
-        pass
+        review = self.review_repo.get(review_id)
+        if not review:
+            raise ValueError(f"No review found with ID: {review_id}")
+        self.review_repo.delete(review_id)
+        return f"Review with ID {review_id} has been deleted."
