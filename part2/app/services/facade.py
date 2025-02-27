@@ -12,6 +12,15 @@ class HBnBFacade:
         self.amenity_repo = InMemoryRepository()
 
     def create_user(self, user_data):
+        required_fields = ["first_name", "last_name", "email"]
+        for field in required_fields:
+            if field not in user_data or not user_data[field].strip():
+                raise ValueError(f"Missing required field: {field}")
+
+        # 🚀 Vérification des doublons
+        if self.get_user_by_email(user_data['email']):
+            raise ValueError("Email already registered")
+
         user = User(**user_data)
         self.user_repo.add(user)
         return user
