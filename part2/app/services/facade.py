@@ -67,16 +67,25 @@ class HBnBFacade:
         return place
 
     def get_place(self, place_id):
+        """Retrieve a place by ID and ensure it has a valid owner."""
         place = self.place_repo.get(place_id)
+
         if not place:
             raise ValueError(f"No place found with ID: {place_id}")
 
-        if not place.owner:
+        # Fetch owner using the facade instead of User.get()
+        owner = self.get_user(place.owner_id)
+        if not owner:
             raise ValueError("Owner not found for this place.")
 
+        # Attach owner manually
+        place.owner = owner
+
+        # Attach amenities
         amenities = self.amenity_repo.get_all()
-        place.amenities = [amenity for amenity
-                           in amenities if amenity.place_id == place_id]
+        place.amenities = [
+            amenity for amenity in amenities if amenity.place_id == place_id]
+
         return place
 
     def get_all_places(self):

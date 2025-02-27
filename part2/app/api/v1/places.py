@@ -37,9 +37,9 @@ place_model = api.model('Place', {
                               description='Longitude of the place'),
     'owner_id': fields.String(required=True, description='ID of the owner'),
     'amenities': fields.List(fields.Nested(amenity_model),
-                             description='List of amenities'),
+                             default=[], description='List of amenities'),
     'reviews': fields.List(fields.Nested(review_model),
-                           description='List of reviews')
+                           default=[], description='List of reviews')
 })
 
 
@@ -77,8 +77,11 @@ class PlaceResource(Resource):
         """Get place details by ID"""
         try:
             place = facade.get_place(place_id)
+            if not place:
+                # Ajout d'une vérification
+                return {"message": "Place not found"}, 404
             return place.to_dict(), 200
-        except ValueError as e:
+        except ValueError:
             return {"message": "Place not found"}, 404
         except Exception as e:
             return {"message": str(e)}, 500
@@ -91,12 +94,19 @@ class PlaceResource(Resource):
         """Update a place's information"""
         try:
             place = facade.get_place(place_id)
+            if not place:
+                return {"message": "Place not found"}, 404
+
             place_data = api.payload
-            if 'title' in place_data and not place_data['title']:
+            if not place_data:
+                return {"message": "No data provided"}, 400
+
+            if 'title' in place_data and not place_data['title'].strip():
                 return {"message": "Title is required"}, 400
+
             updated_place = facade.update_place(place_id, place_data)
             return updated_place.to_dict(), 200
-        except ValueError as e:
+        except ValueError:
             return {"message": "Place not found"}, 404
         except Exception as e:
             return {"message": str(e)}, 400
