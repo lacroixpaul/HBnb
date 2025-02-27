@@ -18,7 +18,6 @@ class HBnBFacade:
             if field not in user_data or not user_data[field].strip():
                 raise ValueError(f"Missing required field: {field}")
 
-        # 🚀 Vérification des doublons
         if self.get_user_by_email(user_data['email']):
             raise ValueError("Email already registered")
 
@@ -44,21 +43,17 @@ class HBnBFacade:
         return self.user_repo.get_all()
 
     def create_place(self, place_data):
-        price = place_data.get('price')
-        if not isinstance(price, (float, int)) or price < 0:
-            raise ValueError("Price must be a positive number.")
-
-        latitude = place_data.get('latitude')
-        if not isinstance(latitude, (float,
-                                     int)) or not (-90.0 <= latitude <= 90.0):
-            raise ValueError("Latitude must be a float between -90.0 and 90.0")
-
-        longitude = place_data.get('longitude')
-        if not isinstance(longitude, (float, int)) or not \
-                (-180.0 <= longitude <= 180.0):
-            raise ValueError("Longitude must be a float \
-                between -180.0 and 180.0.")
-
+        required_fields = ["title", "price", "latitude", "longitude"]
+        for field in required_fields:
+            if field not in place_data or not place_data[field].strip():
+                raise ValueError(f"Missing required field: {field}")
+        owner_id = place_data.get('owner_id')
+        if not owner_id:
+            raise ValueError("Owner ID is required.")
+        owner = self.get_user(owner_id)
+        if not owner:
+            raise ValueError(f"No user found with the given owner ID: {owner_id}")
+        place_data['owner'] = owner
         place = Place(**place_data)
         self.place_repo.add(place)
         return place

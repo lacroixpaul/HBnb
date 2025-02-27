@@ -32,11 +32,12 @@ Example usage:
 """
 
 from .basemodel import BaseModel
+from .user import User
 
 
 class Place(BaseModel):
     def __init__(self, title, price, latitude, longitude,
-                 owner, description=None):
+                 owner, owner_id, description=None):
         """
         Create a new place
         """
@@ -46,19 +47,18 @@ class Place(BaseModel):
             raise ValueError("Title must be a string of max. 100 characters.")
         self.title = title
 
-        if owner is None or not hasattr(owner, 'id'):
+        if owner is None or not isinstance(owner, User):
             raise ValueError("Owner is required and must \
                 be a valid User instance.")
 
         self.owner = owner
+        self.owner_id = owner_id
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-
         if description is not None and not isinstance(description, str):
             raise TypeError("Description must be a string.")
         self.description = description
-
         self.reviews = []
         self.amenities = []
 
@@ -84,15 +84,15 @@ class Place(BaseModel):
 
     @property
     def longitude(self):
-        return (self.__latitude)
+        return (self.__longitude)
 
-    @latitude.setter
+    @longitude.setter
     def longitude(self, value):
         if not isinstance(value, (float, int)) or not \
                 (-180.0 <= value <= 180.0):
             raise ValueError("Longitude must be a float \
                 between -180.0 and 180.0.")
-        self._longitude = float(value)
+        self.__longitude = float(value)
 
     def add_review(self, review):
         """Add a review to the place."""
@@ -111,6 +111,7 @@ class Place(BaseModel):
             "latitude": self.latitude,
             "longitude": self.longitude,
             "owner": self.owner,
+            "owner_id": self.owner_id,
             "description": self.description,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),
