@@ -24,21 +24,15 @@ class ReviewList(Resource):
         try:
             review_data = api.payload
             review = facade.create_review(review_data)
-            return review, 201
+            return review.to_dict(), 201
         except ValueError as e:
             return {"message": str(e)}, 400
 
     @api.response(200, 'List of reviews retrieved successfully')
     def get(self):
         """Retrieve a list of all reviews"""
-        try:
-            reviews = facade.get_all_reviews()
-            if not reviews:
-                return [], 200
-            return [review.to_dict() for review in reviews], 200
-        except Exception as e:
-            return {"message": str(e)}, 500
-
+        reviews = facade.get_all_reviews()
+        return [r.to_dict() for r in reviews], 200
 
 @api.route('/<review_id>')
 class ReviewResource(Resource):
@@ -46,13 +40,10 @@ class ReviewResource(Resource):
     @api.response(404, 'Review not found')
     def get(self, review_id):
         """Get review details by ID"""
-        try:
-            review = facade.get_place(review_id)
-            return review.to_dict(), 200
-        except ValueError as e:
-            return {"message": "Place not found"}, 404
-        except Exception as e:
-            return {"message": str(e)}, 500
+        review = facade.get_review(review_id)
+        if not review:
+            return {'error': 'Review not found'}, 404
+        return review.to_dict(), 200
 
     @api.expect(review_model)
     @api.response(200, 'Review updated successfully')
@@ -60,27 +51,14 @@ class ReviewResource(Resource):
     @api.response(400, 'Invalid input data')
     def put(self, review_id):
         """Update a review's information"""
+        review_data = api.payload
         try:
-            review = facade.get_review(review_id)
-            if not review:
-                return {"Review not found"}, 404
-            review_data = api.payload
-            if 'text' in review_data:
-                review.text = review_data['text']
-            if 'rating' in review_data:
-                review.rating = review_data['rating']
-            if 'place' in review_data:
-                place = facade.get_place(review_data['place'])
-                review.place = place
-            if 'user' in review_data:
-                user = facade.get_user(review_data['user'])
-                review.user = user
-            facade.update_review(review)
-            return {"Review updated successfully"}, 200
+            updated_review = facade.update_review(review_id, review_data)
+            if not updated_review:
+                return {'error': 'User not found'}, 404
+            return updated_review.to_dict(), 200
         except ValueError as e:
-            return {"message": str(e)}, 400
-        except Exception as e:
-            return {"message": str(e)}, 500
+            return {"error": str(e)}, 400
 
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')

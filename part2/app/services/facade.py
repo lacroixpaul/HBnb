@@ -73,15 +73,6 @@ class HBnBFacade:
         if not place:
             raise ValueError(f"No place found with ID: {place_id}")
 
-        # Fetch owner using the facade instead of User.get()
-        owner = self.get_user(place.owner_id)
-        if not owner:
-            raise ValueError("Owner not found for this place.")
-
-        # Attach owner manually
-        place.owner = owner
-
-        # Attach amenities
         amenities = self.amenity_repo.get_all()
         place.amenities = [
             amenity for amenity in amenities if amenity.place_id == place_id]
@@ -141,24 +132,29 @@ class HBnBFacade:
         return amenity
 
     def create_review(self, review_data):
-        text = review_data.get('text', "").strip()
+        text = review_data.get('text')
+        if not isinstance(text, str):
+            raise ValueError("Text must be a string")
+
         rating = review_data.get('rating')
+        if not isinstance(rating, int) or not (1 <= rating <= 5):
+            raise ValueError("Rating must be an integer between 1 and 5 inclusive.")
+
         user_id = review_data.get('user_id')
         place_id = review_data.get('place_id')
 
-        if not text:
-            raise ValueError("Review text cannot be empty.")
-        if not isinstance(rating, int) or rating < 1 or rating > 5:
-            raise ValueError("Rating must be an integer between 1 and 5.")
         user = self.user_repo.get(user_id)
         if not user:
             raise ValueError("User not found.")
+        
         place = self.place_repo.get(place_id)
         if not place:
-            raise ValueError("Place not found.")
-        review = Review(text=text, rating=rating, user=user, place=place)
+            raise ValueError("Place not found.")        
+
+        review = Review(text=text, rating=rating, user_id=user.id, place_id=place.id)        
         self.review_repo.add(review)
         return review
+
 
     def get_review(self, review_id):
         review = self.review_repo.get(review_id)
@@ -170,9 +166,11 @@ class HBnBFacade:
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
+        place_id = self.place_repo.get(place_id)
+        if not place_id:
+            raise ValueError(f"No place found with ID: {place_id}")
         reviews = self.review_repo.get_all()
-        place_reviews = [
-            review for review in reviews if review.place.id == place_id]
+        place_reviews = [review for review in reviews if review.place.id == place_id]
         return place_reviews
 
     def update_review(self, review_id, review_data):

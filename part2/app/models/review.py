@@ -32,7 +32,7 @@ from .user import User
 
 
 class Review(BaseModel):
-    def __init__(self, text, rating, place, user):
+    def __init__(self, text, rating, place_id, user_id):
         """
         description
         """
@@ -46,19 +46,16 @@ class Review(BaseModel):
             raise ValueError("Rating must be an int between 1 and 5.")
         self.rating = rating
 
-        if not isinstance(place, Place):
-            raise ValueError("Place is recquired.")
-        self.place = place
-
-        if not isinstance(user, User):
-            raise ValueError("User must be an instance of User.")
-        self.user = user
+        self.user_id = user_id
+        self.place_id = place_id
 
     def to_dict(self):
         return {
             'id': self.id,
             'text': self.text,
             'rating': self.rating,
-            'place_id': self.place.id if hasattr(self.place, 'id') else None,
-            'user_id': self.user.id if hasattr(self.user, 'id') else None,
+            'place_id': self.place_id,
+            'user_id': self.user_id,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
         }
