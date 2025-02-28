@@ -4,7 +4,29 @@ from app.models.user import User
 
 
 class TestPlaceModel(unittest.TestCase):
-    """Unit tests for the Place model."""
+    """
+    
+    Unit tests for the Place model.
+    - setUp(self): set up a sample User and Place instance
+
+    === Testing place creation ===
+        - test_01_place_creation_success : valide request
+        - test_02_place_creation_missing_title(self): missing title
+        - test_03_place_creation_missing_owner(self): missing owner
+        - test_04_place_creation_negative_price(self): negative price
+        - test_05_place_creation_invalid_latitude(self): invalid latitude
+        - test_06_place_creation_invalid_longitude(self): invalid longitude
+
+    === Testing to dict method ===
+        - test_07_to_dict_method(self): valid request
+
+    === Testing add_review methode
+        - test_08_add_review(self): valide request
+   
+    === Testing add_amenity methode ===
+        - test_09_add_amenity(self) : valide request
+    
+    """
 
     def setUp(self):
         """Set up a sample User and Place instance before each test."""
@@ -26,7 +48,7 @@ class TestPlaceModel(unittest.TestCase):
             description="A nice place in the city center"
         )
 
-    def test_place_creation_success(self):
+    def test_01_place_creation_success(self):
         """Test that a Place instance is correctly created with valid data."""
         self.assertEqual(self.valid_place.title, "Cozy Apartment")
         self.assertEqual(self.valid_place.price, 120.0)
@@ -37,7 +59,7 @@ class TestPlaceModel(unittest.TestCase):
         self.assertEqual(self.valid_place.description,
                          "A nice place in the city center")
 
-    def test_place_creation_missing_title(self):
+    def test_02_place_creation_missing_title(self):
         """Test that creating a Place without a title raises a ValueError."""
         with self.assertRaises(ValueError):
             Place(
@@ -48,7 +70,7 @@ class TestPlaceModel(unittest.TestCase):
                 owner_id=self.user_id
             )
 
-    def test_place_creation_missing_owner(self):
+    def test_03_place_creation_missing_owner(self):
         """Test that creating a Place without an owner_id raises a ValueError."""
         with self.assertRaises(ValueError):
             Place(
@@ -59,7 +81,7 @@ class TestPlaceModel(unittest.TestCase):
                 owner_id=None
             )
 
-    def test_place_creation_negative_price(self):
+    def test_04_place_creation_negative_price(self):
         """Test that setting a negative price raises a ValueError."""
         with self.assertRaises(ValueError):
             Place(
@@ -70,7 +92,7 @@ class TestPlaceModel(unittest.TestCase):
                 owner_id=self.user_id
             )
 
-    def test_place_creation_invalid_latitude(self):
+    def test_05_place_creation_invalid_latitude(self):
         """Test that an invalid latitude value raises a ValueError."""
         with self.assertRaises(ValueError):
             Place(
@@ -81,7 +103,7 @@ class TestPlaceModel(unittest.TestCase):
                 owner_id=self.user_id
             )
 
-    def test_place_creation_invalid_longitude(self):
+    def test_06_place_creation_invalid_longitude(self):
         """Test that an invalid longitude value raises a ValueError."""
         with self.assertRaises(ValueError):
             Place(
@@ -92,7 +114,7 @@ class TestPlaceModel(unittest.TestCase):
                 owner_id=self.user_id
             )
 
-    def test_to_dict_method(self):
+    def test_07_to_dict_method(self):
         """Test that the to_dict method returns the correct dictionary representation."""
         place_dict = self.valid_place.to_dict()
         self.assertEqual(place_dict["title"], "Cozy Apartment")
@@ -106,18 +128,17 @@ class TestPlaceModel(unittest.TestCase):
         self.assertIn("created_at", place_dict)
         self.assertIn("updated_at", place_dict)
 
-    def test_add_review(self):
+    def test_08_add_review(self):
         """Test that a review can be added to a Place instance."""
         self.valid_place.add_review("Great stay!")
         self.assertEqual(len(self.valid_place.reviews), 1)
         self.assertEqual(self.valid_place.reviews[0], "Great stay!")
 
-    def test_add_amenity(self):
+    def test_09_add_amenity(self):
         """Test that an amenity can be added to a Place instance."""
         self.valid_place.add_amenity("WiFi")
         self.assertEqual(len(self.valid_place.amenities), 1)
         self.assertEqual(self.valid_place.amenities[0], "WiFi")
-
 
 if __name__ == "__main__":
     unittest.main()
