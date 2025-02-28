@@ -34,6 +34,7 @@ class ReviewList(Resource):
         reviews = facade.get_all_reviews()
         return [r.to_dict() for r in reviews], 200
 
+
 @api.route('/<review_id>')
 class ReviewResource(Resource):
     @api.response(200, 'Review details retrieved successfully')
@@ -81,9 +82,11 @@ class PlaceReviewList(Resource):
             place = facade.get_place(place_id)
             if not place:
                 return {"message": "Place not found"}, 404
+
             reviews = facade.get_reviews_by_place(place_id)
             if not reviews:
                 return {"message": "No reviews found for this place"}, 200
+
             return [review.to_dict() for review in reviews], 200
         except ValueError as e:
             return {"message": str(e)}, 400

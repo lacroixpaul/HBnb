@@ -138,7 +138,8 @@ class HBnBFacade:
 
         rating = review_data.get('rating')
         if not isinstance(rating, int) or not (1 <= rating <= 5):
-            raise ValueError("Rating must be an integer between 1 and 5 inclusive.")
+            raise ValueError(
+                "Rating must be an integer between 1 and 5 inclusive.")
 
         user_id = review_data.get('user_id')
         place_id = review_data.get('place_id')
@@ -146,15 +147,15 @@ class HBnBFacade:
         user = self.user_repo.get(user_id)
         if not user:
             raise ValueError("User not found.")
-        
+
         place = self.place_repo.get(place_id)
         if not place:
-            raise ValueError("Place not found.")        
+            raise ValueError("Place not found.")
 
-        review = Review(text=text, rating=rating, user_id=user.id, place_id=place.id)        
+        review = Review(text=text, rating=rating,
+                        user_id=user.id, place_id=place.id)
         self.review_repo.add(review)
         return review
-
 
     def get_review(self, review_id):
         review = self.review_repo.get(review_id)
@@ -166,11 +167,14 @@ class HBnBFacade:
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        place_id = self.place_repo.get(place_id)
-        if not place_id:
+        """Retrieve all reviews for a specific place."""
+        place = self.place_repo.get(place_id)
+        if not place:
             raise ValueError(f"No place found with ID: {place_id}")
+
         reviews = self.review_repo.get_all()
-        place_reviews = [review for review in reviews if review.place.id == place_id]
+        place_reviews = [
+            review for review in reviews if review.place_id == place_id]
         return place_reviews
 
     def update_review(self, review_id, review_data):
