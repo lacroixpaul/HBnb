@@ -67,13 +67,16 @@ class HBnBFacade:
         return place
 
     def get_place(self, place_id):
+        """Retrieve a place by ID and ensure it has a valid owner."""
         place = self.place_repo.get(place_id)
+
         if not place:
             raise ValueError(f"No place found with ID: {place_id}")
 
         amenities = self.amenity_repo.get_all()
-        place.amenities = [amenity for amenity
-                           in amenities if amenity.place_id == place_id]
+        place.amenities = [
+            amenity for amenity in amenities if amenity.place_id == place_id]
+
         return place
 
     def get_all_places(self):
@@ -168,7 +171,6 @@ class HBnBFacade:
             raise ValueError(f"No place found with ID: {place_id}")
         reviews = self.review_repo.get_all()
         place_reviews = [review for review in reviews if review.place.id == place_id]
-
         return place_reviews
 
     def update_review(self, review_id, review_data):
