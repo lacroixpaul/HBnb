@@ -46,7 +46,12 @@ class Review(BaseModel):
             raise ValueError("Rating must be an int between 1 and 5.")
         self.rating = rating
 
+        if not isinstance(user_id, str) or not user_id:
+            raise ValueError
         self.user_id = user_id
+        
+        if not isinstance(place_id, str) or not place_id:
+            raise ValueError
         self.place_id = place_id
 
     def to_dict(self):
