@@ -66,6 +66,8 @@ class AmenityResource(Resource):
     def put(self, amenity_id):
         """Update an amenity's information"""
         amenity_data = api.payload
+        if 'id' in amenity_data and amenity_data['id'] != amenity_data:
+            return {"error": "Amenity ID cannot be modified"}, 400
         try:
             uuid.UUID(amenity_id)
         except ValueError:

@@ -29,9 +29,7 @@ class TestReviewModel(unittest.TestCase):
             last_name="Doe",
             email="jane.doe@example.com"
         )
-        self.user_id = self.test_user.id  # Retrieve the UUID
-
-        # Create a test place using the generated user_id
+        self.user_id = self.test_user.id
         self.test_place = Place(
             title="Seaside Villa",
             price=300.0,
@@ -40,9 +38,7 @@ class TestReviewModel(unittest.TestCase):
             owner_id=self.user_id,
             description="A beautiful villa by the sea"
         )
-        self.place_id = self.test_place.id  # Retrieve the UUID
-
-        # Create a test review
+        self.place_id = self.test_place.id
         self.valid_review = Review(
             text="Amazing experience!",
             user_id=self.user_id,

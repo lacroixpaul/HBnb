@@ -19,10 +19,19 @@ class ReviewList(Resource):
     @api.expect(review_model)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Owner cannot review their own place')
     def post(self):
-        """Register a new review"""
         try:
             review_data = api.payload
+            user_id = review_data.get('user_id')
+            place_id = review_data.get('place_id')            
+            place = facade.get_place(place_id)
+            if not place:
+                return {"message": "Place not found"}, 404
+
+            if place.owner_id == user_id:
+                return {"message": "Owner cannot review their own place"}, 403
+
             review = facade.create_review(review_data)
             return review.to_dict(), 201
         except ValueError as e:
@@ -53,6 +62,8 @@ class ReviewResource(Resource):
     def put(self, review_id):
         """Update a review's information"""
         review_data = api.payload
+        if 'id' in review_data and review_data['id'] != review_id:
+            return {"error": "Review ID cannot be modified"}, 400
         try:
             updated_review = facade.update_review(review_id, review_data)
             if not updated_review:
