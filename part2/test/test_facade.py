@@ -5,6 +5,7 @@ from app.models.place import Place
 from app.models.user import User
 from app.models.review import Review
 
+
 class TestHBnBFacade(unittest.TestCase):
     def setUp(self):
         """
@@ -23,7 +24,7 @@ class TestHBnBFacade(unittest.TestCase):
             'price': 150.0,
             'latitude': 34.0194,
             'longitude': -118.4912,
-            'owner': User(first_name="John", last_name="Wick", email="john.wick@example.com"),
+            'owner_id': self.user.id,
             'description': "Beautiful view of the ocean."
         }
         place = self.facade.create_place(place_data)
@@ -39,7 +40,7 @@ class TestHBnBFacade(unittest.TestCase):
             'price': -50,  # Invalid price
             'latitude': 34.0194,
             'longitude': -118.4912,
-            'owner': User(first_name="Patrick", last_name="Sebastien", email="tournerlesserviettes@example.com"),
+            'owner_id': self.user.id,
             'description': "Beautiful view of the ocean."
         }
         with self.assertRaises(ValueError):
@@ -54,7 +55,7 @@ class TestHBnBFacade(unittest.TestCase):
             'price': 150.0,
             'latitude': -91.0,  # Invalid latitude
             'longitude': -118.4912,
-            'owner': User(first_name="Patrick", last_name="Sebastien", email="tournerlesserviettes@example.com"),
+            'owner_id': self.user.id,
             'description': "Beautiful view of the ocean."
         }
         with self.assertRaises(ValueError):
@@ -69,7 +70,7 @@ class TestHBnBFacade(unittest.TestCase):
             'price': 150.0,
             'latitude': 34.0194,
             'longitude': -118.4912,
-            'owner': None,  # Invalid owner
+            'owner_id': None,
             'description': "Beautiful view of the ocean."
         }
         with self.assertRaises(ValueError):
@@ -99,7 +100,7 @@ class TestHBnBFacade(unittest.TestCase):
             'price': 200.0,
             'latitude': 40.7128,
             'longitude': -74.0060,
-            'owner': User(first_name="Alice", last_name="Doe", email="alice.doe@example.com"),
+            'owner_id': self.user.id,
             'description': "Modern apartment in the city center."
         }
         place2 = {
@@ -107,7 +108,7 @@ class TestHBnBFacade(unittest.TestCase):
             'price': 300.0,
             'latitude': 51.5074,
             'longitude': -0.1278,
-            'owner': User(first_name="John", last_name="Doe", email="john.doe@example.com"),
+            'owner_id': self.user.id,
             'description': "Spacious villa in the countryside."
         }
         self.facade.create_place(place1)
@@ -133,7 +134,7 @@ class TestHBnBFacade(unittest.TestCase):
             'price': "invalid",  # Invalid price
             'latitude': 40.7128,
             'longitude': -74.0060,
-            'owner': User(first_name="Alice", last_name="Doe", email="alice.doe@example.com"),
+            'owner_id': self.user.id,
             'description': "This place has corrupted data."
         }
         with self.assertRaises(ValueError):
@@ -149,7 +150,7 @@ class TestHBnBFacade(unittest.TestCase):
             'price': 120.0,
             'latitude': 48.8566,
             'longitude': 2.3522,
-            'owner': User(first_name="Abraham", last_name="Lincoln", email="free.america@example.com"),
+            'owner_id': self.user.id,
             'description': "An old description."
         }
         place = self.facade.create_place(place_data)
@@ -171,7 +172,6 @@ class TestHBnBFacade(unittest.TestCase):
 
 # Test Review Functionality in HBnBFacade
 
-
     def setUp(self):
         """
         This method runs before each test.
@@ -186,14 +186,14 @@ class TestHBnBFacade(unittest.TestCase):
             'email': "review.tester@example.com"
         }
         self.user = self.facade.create_user(self.user_data)
-        
+
         # Creating a place
         self.place_data = {
             'title': "Test Place",
             'price': 100.0,
             'latitude': 48.8566,
             'longitude': 2.3522,
-            'owner': self.user,
+            'owner_id': self.user.id,
             'description': "Test Description"
         }
         self.place = self.facade.create_place(self.place_data)
@@ -354,7 +354,8 @@ class TestHBnBFacade(unittest.TestCase):
         Test update_review with a non-existent ID.
         """
         with self.assertRaises(ValueError):
-            self.facade.update_review("nonexistent_review", {'text': "Updated"})
+            self.facade.update_review(
+                "nonexistent_review", {'text': "Updated"})
 
     # Test delete_review
     def test_delete_review_success(self):
@@ -369,7 +370,8 @@ class TestHBnBFacade(unittest.TestCase):
         }
         review = self.facade.create_review(review_data)
         result = self.facade.delete_review(review.id)
-        self.assertEqual(result, f"Review with ID {review.id} has been deleted.")
+        self.assertEqual(
+            result, f"Review with ID {review.id} has been deleted.")
         with self.assertRaises(ValueError):
             self.facade.get_review(review.id)
 
@@ -379,6 +381,7 @@ class TestHBnBFacade(unittest.TestCase):
         """
         with self.assertRaises(ValueError):
             self.facade.delete_review("nonexistent_review")
+
 
 if __name__ == '__main__':
     unittest.main()
