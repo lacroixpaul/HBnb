@@ -37,6 +37,14 @@ class TestUserPlaceReviewEndpoints(unittest.TestCase):
         - test_08_get_review_by_id(self): Test retrieving a review by its ID
         - test_09_update_review(self): Test updating an existing review
         - test_10_delete_review(self): Test deleting an existing review
+    
+    === Testing Amenity creation and modification === 
+        - test_11_create_amenity(self): test successful amenity creation
+        - test_12_create_duplicate_amenity(self): testing duplication protection
+        - test_13_get_all_amenities(self): testing getting all amenity
+        - test_14_update_amenity(self): testing updating amenity
+        - test_15_update_nonexistent_amenity(self): testing updating non existing amenity
+    
     """
 
     @classmethod
@@ -296,6 +304,51 @@ class TestUserPlaceReviewEndpoints(unittest.TestCase):
         self.assertTrue(hasattr(TestUserPlaceReviewEndpoints, 'review_id'))
         response = self.client.delete(f'/api/v1/reviews/{TestUserPlaceReviewEndpoints.review_id}')
         self.assertEqual(response.status_code, 200)
+
+
+    def test_11_create_amenity(self):
+        """Test the creation of an Amenity"""
+        response = self.client.post("/api/v1/amenities/", json={"name": "WiFi"})
+        self.assertEqual(response.status_code, 201)
+        self.assertIn("id", response.json)
+        self.assertEqual(response.json["name"], "WiFi")
+
+    def test_12_create_duplicate_amenity(self):
+        """Test that creating a duplicate Amenity fails"""
+        response = self.client.post("/api/v1/amenities/", json={"name": "WiFi"})
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.json)
+
+    def test_13_get_all_amenities(self):
+        """Test retrieving all amenities"""
+        self.client.post("/api/v1/amenities/", json={"name": "Pool"})
+        response = self.client.get("/api/v1/amenities/")
+        self.assertEqual(response.status_code, 200)
+        amenities = response.json
+        self.assertIsInstance(amenities, list)
+        self.assertGreaterEqual(len(amenities), 2)
+        amenity_names = [a["name"] for a in amenities]
+        self.assertIn("WiFi", amenity_names)
+        self.assertIn("Pool", amenity_names)
+
+    def test_14_update_amenity(self):
+        """Test updating an existing amenity."""
+        response = self.client.post("/api/v1/amenities/", json={"name": "Gym"})
+        self.assertEqual(response.status_code, 201)
+        amenity_id = response.json["id"]
+        updated_data = {"name": "Sport Gym"}
+        response = self.client.put(f"/api/v1/amenities/{amenity_id}", json=updated_data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json["name"], "Sport Gym")
+
+
+    def test_15_update_nonexistent_amenity(self):
+        """Test updating a non-existent amenity"""
+        invalid_id = "123e4567-e89b-12d3-a456-426614174000"
+        response = self.client.put(f"/api/v1/amenities/{invalid_id}", json={"name": "New Name"})
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json["error"], "Amenity not found")
+
 
 
 if __name__ == '__main__':
