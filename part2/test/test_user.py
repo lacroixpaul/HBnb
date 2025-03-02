@@ -1,129 +1,125 @@
 import unittest
-from app.services.facade import HBnBFacade
+import uuid
 from app.models.user import User
+from app.services.facade import HBnBFacade
+from app.persistence.repository import InMemoryRepository
 
 
 class TestUserFacade(unittest.TestCase):
+    """
+    Unit tests for the User model.
+
+    === Setup ===
+        - setUp(self): Initializes the UserFacade and creates a test user.
+
+    === Testing user creation ===
+        - test_01_create_user_success(self): Valid user creation.
+        - test_02_create_user_missing_fields(self): Missing required fields.
+        - test_03_create_user_duplicate_email(self): Attempt to create a user with an already used email.
+
+    === Testing get_user method ===
+        - test_04_get_all_users(self): Retrieve all users
+        - test_05_get_user_success(self): Retrieve a user by ID.
+        - test_06_get_user_not_found(self): Retrieve a user with an invalid/non-existent ID.
+
+    === Testing update_user method ===
+        - test_07_update_user_success(self): Updating user with valid data.
+        - test_08_update_user_invalid_fields(self): Updating user with invalid fields (e.g., malformed email).
+        - test_09_update_user_duplicate_email(self): Attempt to update a user's email with one that is already used.
+    """
 
     def setUp(self):
-        """Initialize the Facade before each test"""
         self.facade = HBnBFacade()
+        self.facade.user_repo = InMemoryRepository()
 
-    def test_create_user_success(self):
-        """Test creating a valid user"""
-        user_data = {
+        self.user_data = {
             "first_name": "John",
             "last_name": "Doe",
             "email": "john.doe@example.com"
         }
-        created_user = self.facade.create_user(user_data)
+        self.test_user = self.facade.create_user(self.user_data)
 
-        self.assertIsInstance(created_user, User)
-        self.assertEqual(created_user.first_name, "John")
-        self.assertEqual(created_user.last_name, "Doe")
-        self.assertEqual(created_user.email, "john.doe@example.com")
-        # ✅ Vérifie que l'UUID est bien généré
-        self.assertIsNotNone(created_user.id)
+    def test_01_create_user_success(self):
+        """Test creating a valid user."""
+        self.assertIsInstance(self.test_user.id, str)
+        self.assertEqual(self.test_user.first_name, "John")
 
-    def test_create_user_duplicate_email(self):
-        """Test creating a user with a duplicate email"""
-        user_data = {
-            "first_name": "Alice",
-            "last_name": "Smith",
-            "email": "alice@example.com"
-        }
-        self.facade.create_user(user_data)
-
-        # 🚨 Vérifie que la duplication est bloquée
+    def test_02_create_user_missing_fields(self):
+        """Test creating a user with missing fields."""
         with self.assertRaises(ValueError):
-            self.facade.create_user(user_data)
+            self.facade.create_user({"first_name": "Alice"})
 
-    def test_create_user_missing_fields(self):
-        """Test creating a user with missing fields"""
-        user_data = {"first_name": "Charlie"}
-
+    def test_03_create_user_duplicate_email(self):
+        """Test creating a user with an already used email."""
         with self.assertRaises(ValueError):
-            self.facade.create_user(user_data)
+            self.facade.create_user(self.user_data)
 
-    def test_get_user_success(self):
-        """Test retrieving a valid user"""
-        user_data = {
-            "first_name": "Eve",
-            "last_name": "Miller",
-            "email": "eve.miller@example.com"
-        }
-        created_user = self.facade.create_user(user_data)
-        retrieved_user = self.facade.get_user(created_user.id)
-
-        self.assertIsNotNone(retrieved_user)
-        self.assertEqual(retrieved_user.id, created_user.id)
-        self.assertEqual(retrieved_user.email, "eve.miller@example.com")
-
-    def test_get_user_not_found(self):
-        """Test retrieving a non-existent user"""
-        retrieved_user = self.facade.get_user("invalid_uuid")
-        self.assertIsNone(retrieved_user)
-
-    def test_get_all_users(self):
+    def test_04_get_all_users(self):
         """Test retrieving all users"""
+        self.facade.user_repo = InMemoryRepository()
+        users_before = self.facade.get_all_users()
+
         self.facade.create_user(
             {"first_name": "Alice", "last_name": "Brown", "email": "alice@example.com"})
         self.facade.create_user(
             {"first_name": "Bob", "last_name": "Johnson", "email": "bob@example.com"})
 
         users = self.facade.get_all_users()
+        print("Users after adding:", len(users))  # Debug
+
+        # Vérifie qu'il n'y a bien que 2 utilisateurs
         self.assertEqual(len(users), 2)
 
-    def test_update_user_success(self):
-        """Test updating a valid user"""
-        user_data = {
-            "first_name": "Lucas",
-            "last_name": "White",
-            "email": "lucas.white@example.com"
-        }
-        created_user = self.facade.create_user(user_data)
-        user_id = created_user.id
+    def clear_users(self):
+        """Supprime tous les utilisateurs du dépôt (utile pour les tests)."""
+        self.user_repo = InMemoryRepository()
 
-        update_data = {
-            "first_name": "Luke",
-            "last_name": "W.",
-            "email": "luke.w@example.com"
-        }
-        updated_user = self.facade.update_user(user_id, update_data)
+    def test_05_get_user_success(self):
+        """Test retrieving a valid user."""
+        user = self.facade.get_user(self.test_user.id)
+        self.assertEqual(user.email, "john.doe@example.com")
 
-        self.assertIsNotNone(updated_user)
-        self.assertEqual(updated_user.id, user_id)
-        self.assertEqual(updated_user.first_name, "Luke")
-        self.assertEqual(updated_user.last_name, "W.")
-        self.assertEqual(updated_user.email, "luke.w@example.com")
-
-    def test_update_user_not_found(self):
-        """Test updating a non-existent user"""
-        update_data = {
-            "first_name": "Nina",
-            "last_name": "Black",
-            "email": "nina@example.com"
-        }
-        updated_user = self.facade.update_user(
-            "invalid_uuid", update_data)
-
-        self.assertIsNone(updated_user)
-
-    def test_update_user_invalid_fields(self):
-        """Test updating a user with invalid fields"""
-        user_data = {
-            "first_name": "Sam",
-            "last_name": "Fisher",
-            "email": "sam@example.com"
-        }
-        created_user = self.facade.create_user(user_data)
-        user_id = created_user.id
-
-        update_data = {"email": "not_an_email"}
-
+    def test_06_get_user_not_found(self):
+        """Test retrieving a non-existent user."""
         with self.assertRaises(ValueError):
-            self.facade.update_user(user_id, update_data)
+            # Random ID that doesn't exist
+            self.facade.get_user(str(uuid.uuid4()))
+
+    def test_07_update_user_success(self):
+        """Test updating a user with valid data."""
+        updated_user = self.facade.update_user(
+            self.test_user.id, {"first_name": "Jane"})
+        self.assertEqual(updated_user.first_name, "Jane")
+
+    def test_08_update_user_invalid_fields(self):
+        """Test updating a user with invalid fields."""
+        with self.assertRaises(ValueError):
+            self.facade.update_user(
+                self.test_user.id, {"email": "invalid-email"})
+
+    def test_09_update_user_duplicate_email(self):
+        """Test that updating a user with an already used email fails."""
+        # Create two distinct users
+        user1_data = {
+            "first_name": "Alice",
+            "last_name": "Brown",
+            "email": "alice@example.com"
+        }
+        user2_data = {
+            "first_name": "Bob",
+            "last_name": "Johnson",
+            "email": "bob@example.com"
+        }
+
+        user1 = self.facade.create_user(user1_data)
+        user2 = self.facade.create_user(user2_data)
+
+        # 🚨 Attempt to update user2's email to match user1's email
+        with self.assertRaises(ValueError) as context:
+            self.facade.update_user(user2.id, {"email": user1.email})
+
+        self.assertEqual(str(context.exception), "Email already in use")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

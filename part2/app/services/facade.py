@@ -3,6 +3,7 @@ from app.models.place import Place
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.review import Review
+from werkzeug.exceptions import NotFound
 
 
 class HBnBFacade:
@@ -26,15 +27,21 @@ class HBnBFacade:
         return user
 
     def get_user(self, user_id):
-        return self.user_repo.get(user_id)
+        user = self.user_repo.get(user_id)
+        if not user:
+            raise ValueError("User not found")
+        return user
 
     def get_user_by_email(self, email):
         return self.user_repo.get_by_attribute('email', email)
 
     def update_user(self, user_id, user_data):
         user = self.get_user(user_id)
-        if not user:
-            return None
+
+        if 'email' in user_data:
+            existing_user = self.get_user_by_email(user_data['email'])
+            if existing_user and existing_user.id != user_id:
+                raise ValueError("Email already in use")
 
         if 'email' in user_data:
             existing_user = self.get_user_by_email(user_data['email'])
@@ -45,7 +52,7 @@ class HBnBFacade:
         return user
 
     def get_all_users(self):
-        return self.user_repo.get_all()
+        return [user for user in self.user_repo.get_all() if user]
 
     def create_place(self, place_data):
         price = place_data.get('price')
@@ -107,7 +114,10 @@ class HBnBFacade:
         return amenity
 
     def get_amenity(self, amenity_id):
-        return self.amenity_repo.get(amenity_id)
+        amenity = self.amenity_repo.get(amenity_id)
+        if not amenity:
+            raise NotFound("Amenity not found")
+        return amenity
 
     def get_all_amenities(self):
         return self.amenity_repo.get_all()
@@ -115,7 +125,7 @@ class HBnBFacade:
     def update_amenity(self, amenity_id, amenity_data):
         amenity = self.get_amenity(amenity_id)
         if not amenity:
-            return None
+            raise NotFound("Amenity not found")
 
         new_name = amenity_data.get('name', "").strip()
         if not new_name:

@@ -1,6 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
 import uuid
+from werkzeug.exceptions import NotFound
 
 api = Namespace('amenities', description='Amenity operations')
 
@@ -66,10 +67,18 @@ class AmenityResource(Resource):
     def put(self, amenity_id):
         """Update an amenity's information"""
         amenity_data = api.payload
-        if 'id' in amenity_data and amenity_data['id'] != amenity_data:
+        if 'id' in amenity_data and amenity_data['id'] != amenity_id:
             return {"error": "Amenity ID cannot be modified"}, 400
+
         try:
-            uuid.UUID(amenity_id)
+            uuid.UUID(amenity_id)  # Vérifie que l'ID est bien au format UUID
+            updated_amenity = facade.update_amenity(amenity_id, amenity_data)
+
+            return {'message': 'Amenity updated successfully', 'id': updated_amenity.id, 'name': updated_amenity.name}, 200
+
+        except NotFound as e:
+            return {"error": "Amenity not found"}, 404  # Correction ici
+
         except ValueError:
             return {'error': 'Invalid amenity ID format'}, 400
 

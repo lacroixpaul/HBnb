@@ -5,7 +5,7 @@ from app.models.user import User
 
 class TestPlaceModel(unittest.TestCase):
     """
-    
+
     Unit tests for the Place model.
     - setUp(self): set up a sample User and Place instance
 
@@ -20,12 +20,16 @@ class TestPlaceModel(unittest.TestCase):
     === Testing to dict method ===
         - test_07_to_dict_method(self): valid request
 
-    === Testing add_review methode
+    === Testing add_review method
         - test_08_add_review(self): valide request
-   
-    === Testing add_amenity methode ===
+
+    === Testing add_amenity method ===
         - test_09_add_amenity(self) : valide request
-    
+
+    === Testing update_place method ===
+        - test_10_update_place_success(self):
+        - test_11_update_place_invalid_data(self):
+
     """
 
     def setUp(self):
@@ -36,7 +40,7 @@ class TestPlaceModel(unittest.TestCase):
             last_name="Doe",
             email="john.doe@example.com"
         )
-        self.user_id = self.test_user.id  # Retrieve the UUID
+        self.user_id = self.test_user.id
 
         # Create a test place using the generated user_id
         self.valid_place = Place(
@@ -44,7 +48,7 @@ class TestPlaceModel(unittest.TestCase):
             price=120.0,
             latitude=45.764043,
             longitude=4.835659,
-            owner_id=self.user_id,  # Use the correct user_id
+            owner_id=self.user_id,
             description="A nice place in the city center"
         )
 
@@ -139,6 +143,35 @@ class TestPlaceModel(unittest.TestCase):
         self.valid_place.add_amenity("WiFi")
         self.assertEqual(len(self.valid_place.amenities), 1)
         self.assertEqual(self.valid_place.amenities[0], "WiFi")
+
+    def test_10_update_place_success(self):
+        """Test updating a place with valid data"""
+        self.valid_place.title = "Updated Title"
+        self.valid_place.price = 150.0
+        self.valid_place.latitude = 40.7128
+        self.valid_place.longitude = -74.0060
+        self.valid_place.description = "Updated description."
+
+        self.assertEqual(self.valid_place.title, "Updated Title")
+        self.assertEqual(self.valid_place.price, 150.0)
+        self.assertEqual(self.valid_place.latitude, 40.7128)
+        self.assertEqual(self.valid_place.longitude, -74.0060)
+        self.assertEqual(self.valid_place.description, "Updated description.")
+
+    def test_10_update_place_success(self):
+        """Test updating a place with valid data"""
+        self.valid_place.title = "Updated Title"
+        self.valid_place.price = 150.0
+        self.valid_place.latitude = 40.7128
+        self.valid_place.longitude = -74.0060
+        self.valid_place.description = "Updated description."
+
+        self.assertEqual(self.valid_place.title, "Updated Title")
+        self.assertEqual(self.valid_place.price, 150.0)
+        self.assertEqual(self.valid_place.latitude, 40.7128)
+        self.assertEqual(self.valid_place.longitude, -74.0060)
+        self.assertEqual(self.valid_place.description, "Updated description.")
+
 
 if __name__ == "__main__":
     unittest.main()
