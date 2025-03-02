@@ -58,12 +58,12 @@ class UserResource(Resource):
     def put(self, user_id):
         """Update an user's information"""
         user_data = api.payload
-
+        if 'id' in user_data and user_data['id'] != user_id:
+            return {"error": "ID cannot be modified"}, 400
         try:
             updated_user = facade.update_user(user_id, user_data)
             if not updated_user:
                 return {'error': 'User not found'}, 404
-
             return updated_user.to_dict(), 200
 
         except ValueError as e:

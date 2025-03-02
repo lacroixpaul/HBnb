@@ -11,22 +11,26 @@ class TestUserPlaceReviewEndpoints(unittest.TestCase):
 
     === Testing User creation ===
         - test_01_create_user(self): Test successful user creation with UUID retrieval
-        - test_01b_create_invalid_user(self): Test invalid user creation 
+        - test_01b_create_invalid_user(self): Test invalid user creation
+        - test_01c_create_user2(self): create User 2 for review testing
+        - test_01d_user_cannot_modify_own_id(self): testing forbidding ID modification
 
     === Testing Place creation ===
         - test_02_create_place(self): Test successful place creation with valid user ID
-        - test_02b_create_place_missing_attribute(self):  Test invalid place creation 
+        - test_02b_create_place_missing_attribute(self): Test invalid place creation 
 
     === Testing Review creation ===
         - test_03_create_review(self): Test successful review creation with valid request
         - test_03b_create_review_missing_attribute(self): Test invalid review creation
-        
+        - test_03c_create_review_owner(self): test reviewing own place
+
     === Testing Place retrieval ===
         - test_04_get_all_places(self): Test retrieving all places
         - test_05_get_place_by_id(self): Test retrieving a place by its ID
         - test_05b_get_place_by_invalid_id(self): Test retrieving a place by a wrong ID
         - test_06_update_place(self): Test updating an existing place
-        - test_06b_update_place_invalid_id(self): Test invalid place update 
+        - test_06b_update_place_invalid_id(self): Test invalid place update
+        - test_06c_place_cannot_modify_own_id(self): testing forbidding ID modification
         
     === Testing Review retrieval and modification ===
         - test_07_get_all_reviews(self): Test retrieving all reviews
@@ -65,6 +69,33 @@ class TestUserPlaceReviewEndpoints(unittest.TestCase):
         message = json.loads(response.data)
         self.assertIn("error", message)
 
+    def test_01c_create_user2(self):
+        """Test successful creation of another user (user2)."""
+        response = self.client.post('/api/v1/users/', json={
+            "first_name": "John",
+            "last_name": "Smith",
+            "email": "john.smith@example.com"
+        })
+        self.assertEqual(response.status_code, 201)
+        message = json.loads(response.data)
+        TestUserPlaceReviewEndpoints.user2_id = message["id"]
+        print("Created user2 ID:", TestUserPlaceReviewEndpoints.user2_id)
+
+
+    def test_01d_user_cannot_modify_own_id(self):
+        """Test that a user cannot modify their own 'id'."""
+        self.assertTrue(hasattr(TestUserPlaceReviewEndpoints, 'user_id'))
+        response = self.client.put(f'/api/v1/users/{TestUserPlaceReviewEndpoints.user_id}', json={
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "email": "jane.doe@example.com",
+            "id": "new_invalid_id"
+        })        
+        self.assertEqual(response.status_code, 400)
+        message = json.loads(response.data)
+        self.assertIn("error", message)
+        self.assertEqual(message["error"], "ID cannot be modified")
+
     def test_02_create_place(self):
         """Test successful place creation with valid user ID."""
         self.assertTrue(hasattr(TestUserPlaceReviewEndpoints, 'user_id'))
@@ -102,12 +133,12 @@ class TestUserPlaceReviewEndpoints(unittest.TestCase):
 
     def test_03_create_review(self):
         """Test successful review creation for the place created by the user."""
-        self.assertTrue(hasattr(TestUserPlaceReviewEndpoints, 'user_id'))
+        self.assertTrue(hasattr(TestUserPlaceReviewEndpoints, 'user2_id'))
         self.assertTrue(hasattr(TestUserPlaceReviewEndpoints, 'place_id'))
         response = self.client.post('/api/v1/reviews/', json={
             "text": "Great place, very cozy!",
             "rating": 5,
-            "user_id": TestUserPlaceReviewEndpoints.user_id,
+            "user_id": TestUserPlaceReviewEndpoints.user2_id,
             "place_id": TestUserPlaceReviewEndpoints.place_id
         })
         self.assertEqual(response.status_code, 201)
@@ -116,7 +147,7 @@ class TestUserPlaceReviewEndpoints(unittest.TestCase):
         print("Created review ID:", TestUserPlaceReviewEndpoints.review_id)
         self.assertEqual(message["text"], "Great place, very cozy!")
         self.assertEqual(message["rating"], 5)
-        self.assertEqual(message["user_id"], TestUserPlaceReviewEndpoints.user_id)
+        self.assertEqual(message["user_id"], TestUserPlaceReviewEndpoints.user2_id)
         self.assertEqual(message["place_id"], TestUserPlaceReviewEndpoints.place_id)
 
     def test_03b_create_review_missing_attribute(self):
@@ -126,13 +157,28 @@ class TestUserPlaceReviewEndpoints(unittest.TestCase):
         response = self.client.post('/api/v1/reviews/', json={
             "text": "",
             "rating": 5,
-            "user_id": TestUserPlaceReviewEndpoints.user_id,
+            "user_id": TestUserPlaceReviewEndpoints.user2_id,
             "place_id": TestUserPlaceReviewEndpoints.place_id
         })
         self.assertEqual(response.status_code, 400)
         message = json.loads(response.data)
         self.assertIn("message", message)
         self.assertEqual(message["message"], "Content must be a string.")
+
+    def test_03c_create_review_owner(self):
+        """Test owner cannot create a review for their own place."""
+        self.assertTrue(hasattr(TestUserPlaceReviewEndpoints, 'user_id'))
+        self.assertTrue(hasattr(TestUserPlaceReviewEndpoints, 'place_id'))
+        response = self.client.post('/api/v1/reviews/', json={
+            "text": "Owner should not be able to review their own place.",
+            "rating": 5,
+            "user_id": TestUserPlaceReviewEndpoints.user_id,
+            "place_id": TestUserPlaceReviewEndpoints.place_id
+        })
+        self.assertEqual(response.status_code, 403)
+        message = json.loads(response.data)
+        self.assertIn("message", message)
+        self.assertEqual(message["message"], "Owner cannot review their own place")
 
     def test_04_get_all_places(self):
         """Test retrieving all places."""
@@ -190,6 +236,28 @@ class TestUserPlaceReviewEndpoints(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
         message = json.loads(response.data)
         self.assertIn("message", message)
+
+
+    def test_06c_place_cannot_modify_own_id(self):
+        """Test that a place's ID cannot be modified."""
+        self.assertTrue(hasattr(TestUserPlaceReviewEndpoints, 'place_id'))        
+        updated_data = {
+            "id": "new-id",
+            "title": "Updated Apartment",
+            "description": "A newly renovated place.",
+            "price": 150.0,
+            "latitude": 45.764043,
+            "longitude": 4.835659,
+            "owner_id": TestUserPlaceReviewEndpoints.user2_id
+        }
+        response = self.client.put(
+            f'/api/v1/places/{TestUserPlaceReviewEndpoints.place_id}', 
+            json=updated_data
+        )
+        self.assertEqual(response.status_code, 400)
+        message = json.loads(response.data)
+        self.assertIn("error", message)
+        self.assertEqual(message["error"], "Place ID cannot be modified")
 
     def test_07_get_all_reviews(self):
         """Test retrieving all reviews."""
